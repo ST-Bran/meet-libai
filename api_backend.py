@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from config.config import Config
 from web.api.api import register_routes as api_register_routes
 from web.api.manage import register_routes as manage_register_routes
+from web.api.resources_manage import register_routes as resource_manage_register_routes
 
 IS_DEV_ENV = os.environ.get('PY_ENVIRONMENT') == "dev"
 IS_DEBUG = os.environ.get('PY_DEBUG') == "true"
@@ -24,6 +25,7 @@ def run_api():
 
     api_register_routes(app)
     manage_register_routes(app)
+    resource_manage_register_routes(app)
 
     uvicorn.run(app,
                 host="0.0.0.0",

@@ -49,7 +49,7 @@ class RagRetriever(ModelBase, ABC):
         documents = text_splitter.split_documents(docs)
         self._vector = FAISS.from_documents(documents, self._embedding)
 
-        self._retriever = self._vector.as_retriever(search_kwargs={"k": 6})
+        self._retriever = self._vector.as_retriever(search_type="similarity_score_threshold", search_kwargs={'score_threshold': 0.8})
         self._model_status = ModelStatus.READY
 
         self._logger.logger.opt(colors=True).info("vector db <red>built</red> successfully")
@@ -90,7 +90,7 @@ class RagRetriever(ModelBase, ABC):
 
         self._logger.info("loading vector db")
         self._vector = FAISS.load_local(model_path, self._embedding, allow_dangerous_deserialization=True)
-        self._retriever = self._vector.as_retriever(search_kwargs={"k": 6})
+        self._retriever = self._vector.as_retriever(search_type="similarity_score_threshold", search_kwargs={'score_threshold': 0.8})
 
     def dump(self, *args, **kwargs):
         self._remove_obsolete_versions()
@@ -130,8 +130,16 @@ class RagRetriever(ModelBase, ABC):
     def vector_db(self) -> VST:
         if self.model_status == ModelStatus.READY:
             return self._vector
-
+        else:
+            self.reload()
+            return self._vector
         raise ModelError("Model not built")
+
+    # @property
+    # def vector_db(self) -> VST:
+    #     if self.model_status == ModelStatus.READY:
+    #         return self._vector
+    #     raise ModelError("Model not built")
 
 
 INSTANCE = RagRetriever()

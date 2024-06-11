@@ -4,7 +4,7 @@
 # @FileName: retriever_service.py
 # @Software: PyCharm
 # @Affiliation: tfswufe.edu.cn
-from typing import List, Any
+from typing import List, Any, Tuple
 
 from langchain_core.documents import Document
 
@@ -13,10 +13,14 @@ from model.rag.retriever_model import INSTANCE
 
 def retrieve(query: str) -> List[Document]:
     docs = INSTANCE.retriever.invoke(query)
-
     return docs
 
 
 def search(query: str, search_type: str, **kwargs: Any) -> List[Document]:
     docs = INSTANCE.vector_db.search(query, search_type, **kwargs)
+    return docs
+
+
+def similarity_search_with_score(query: str) -> List[Tuple[Document, float]]:
+    docs = INSTANCE.vector_db.similarity_search_with_score(query)
     return docs

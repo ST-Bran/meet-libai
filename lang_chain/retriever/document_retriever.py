@@ -16,7 +16,7 @@ from langchain_core.runnables import Runnable
 
 from lang_chain.fake_openai import get_openai_chat_model
 from lang_chain.zhipu_chat import chat_using_messages
-from model.rag.retriever_service import retrieve
+from model.rag.retriever_service import retrieve, similarity_search_with_score
 
 
 def create_history_aware_query(history: List[List], query: str) -> str | None:
@@ -42,6 +42,17 @@ def retrieve_docs(question: str) -> Tuple[str, List[Document]]:
     docs = retrieve(question)
     _context = create_context(docs)
     return _context, docs
+
+
+def retrieve_docs_with_score(question: str) -> Tuple[str, List[Document]]:
+    docs = similarity_search_with_score(question)
+    score_target = 50.0
+    filtered_docs = []
+    for doc in docs:
+        print(f'问题：{question}===========文档分数：{doc[1]}===========找到的文档：{doc[0]}')
+        filtered_docs = [doc for doc, score in docs if score < score_target]
+    _context = create_context(filtered_docs)
+    return _context, filtered_docs
 
 
 # def get_rag_chain() -> Runnable:

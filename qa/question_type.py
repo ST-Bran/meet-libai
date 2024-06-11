@@ -22,6 +22,7 @@ class QuestionType(Enum):
     CHINESE2POETRY = 8
     POETRY2POETRY = 9
     PPT = 10
+    OUTLINE = 11
 
 
 QUESTION_MAP = {
@@ -36,4 +37,5 @@ QUESTION_MAP = {
     "以古文搜古文":QuestionType.POETRY2POETRY,
     "以白话文搜古诗文": QuestionType.CHINESE2POETRY,
     "PPT生成": QuestionType.PPT,
+    "大纲生成": QuestionType.OUTLINE,
 }
