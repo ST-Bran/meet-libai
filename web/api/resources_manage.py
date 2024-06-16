@@ -7,8 +7,9 @@ import mysql
 from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks, HTTPException
 from sqlalchemy import create_engine, Column, String, Text
 from sqlalchemy.orm import sessionmaker, declarative_base
-from starlette.responses import JSONResponse, FileResponse
+from starlette.responses import JSONResponse, FileResponse, StreamingResponse
 
+from lang_chain.qianwen_chat import qianwen_sync_call_streaming
 from model.graph_entity.search_model import INSTANCE as GRAPH_ENTITY_SEARCHER
 from model.model_base import ModelBase
 from model.rag.retriever_model import INSTANCE as RAG_RETRIEVER
@@ -136,15 +137,23 @@ def register_routes(app: FastAPI):
             file.file.close()
         return {"resource_id": resource_id, "filename": file.filename}
 
-    @app.post('/inference')
+    @app.post('/generate_outline')
     def build(background_tasks: BackgroundTasks,
               query: Optional[str] = Form(..., description="输入"),
               request_id: Optional[str] = Form(..., description="请求id")
               ):
+        # 同步返回
+        response = process_data(query, request_id)
+        return {"data": response}
         # 添加任务到后台执行
-        background_tasks.add_task(process_data, query, request_id)
+        # background_tasks.add_task(process_data, query, request_id)
         # 立即返回响应
-        return {"message": "任务正在后台执行"}
+        # return {"message": "任务正在后台执行"}
+
+    @app.post('/inference')
+    def build(query: Optional[str] = Form(..., description="输入")):
+        return StreamingResponse(qianwen_sync_call_streaming(query), media_type="text/plain")
+
 
     @app.get('/audio_result')
     def build(request_id: Optional[str] = Form(..., description="请求id")):
@@ -178,13 +187,15 @@ def register_routes(app: FastAPI):
 
     def process_data(query: str, request_id: str):
         outline = outline_generate_tool(query)
+        result_dict = {"outline": outline, "resources_abs_path": ""}
         # 将文件总数保存在服务器上
-        total_files[request_id] = len(outline)
-        for bullypoint in outline:
-            content = bullypoint["content"]
-            number = bullypoint["bullypoint"]
-            file_name = f'{request_id}---{number}'
-            test_2_audio(content, file_name)
+        # total_files[request_id] = len(outline)
+        # for bullypoint in outline:
+        #     content = bullypoint["content"]
+        #     number = bullypoint["bullypoint"]
+        #     file_name = f'{request_id}---{number}'
+        #     test_2_audio(content, file_name)
+        return result_dict
 
     def remove_file(path: str):
         os.remove(path)

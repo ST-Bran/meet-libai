@@ -24,3 +24,4 @@ python-pptx
 faiss-cpu
 pymysql==1.1.1
 mysql-connector-python
+dashscope

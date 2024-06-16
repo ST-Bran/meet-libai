@@ -5,7 +5,7 @@ import pymysql
 from pymysql.cursors import DictCursor
 
 from config.prompt_config import init_draft_prompt, label_query_prompt, outline_generate_prompt, MUSEUM_COLLECTION_DDL
-from lang_chain.retriever.document_retriever import retrieve_docs, retrieve_docs_with_score
+from lang_chain.retriever.document_retriever import retrieve_docs_with_score
 from lang_chain.zhipu_chat import chat_with_ai
 
 
@@ -80,7 +80,6 @@ def get_related_labels(initial_draft):
     return output
 
 
-
 def get_outline(draft: str, resources_map):
     """
     根据解说初稿和资源生成解说大纲
@@ -120,4 +119,3 @@ def execute_sql(sql: str):
         # 无论成功与否，都关闭 cursor 和连接以释放资源
         cursor.close()
         conn.close()
-
