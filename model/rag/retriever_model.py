@@ -8,7 +8,7 @@ import os.path
 from abc import ABC
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain_community.document_loaders import PyPDFDirectoryLoader, UnstructuredWordDocumentLoader, Docx2txtLoader
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.vectorstores import VST, VectorStoreRetriever
 
@@ -31,6 +31,7 @@ class RagRetriever(ModelBase, ABC):
 
     _model_path_base = os.path.join(get_app_root(), f"data/model/{_name}")
     _pdf_data_path = os.path.join(get_app_root(), "data/corpus/retriever/pdf")  # todo: 目前仅支持pdf格式，后续可支持网页等其他格式
+    _docx_data_path = os.path.join(get_app_root(), "data/corpus/retriever/docx")
 
     _logger: Logger = Logger("rag_retriever")
 
@@ -42,11 +43,19 @@ class RagRetriever(ModelBase, ABC):
         self._version = self.get_latest_model_version() + 1
         self._logger.info(f"building version {self._version}")
 
+        docxs = []
+        for filename in os.listdir(self._docx_data_path):
+            file_path = self._docx_data_path + "/" + filename
+
+            loader = Docx2txtLoader(file_path=file_path)
+            document = loader.load()
+            docxs.extend(document)
+
         loader = PyPDFDirectoryLoader(path=self._pdf_data_path)
         docs = loader.load()
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=240, chunk_overlap=40)
-        documents = text_splitter.split_documents(docs)
+        documents = text_splitter.split_documents(docxs)
         self._vector = FAISS.from_documents(documents, self._embedding)
 
         self._retriever = self._vector.as_retriever(search_type="similarity_score_threshold", search_kwargs={'score_threshold': 0.8})

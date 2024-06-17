@@ -25,3 +25,7 @@ faiss-cpu
 pymysql==1.1.1
 mysql-connector-python
 dashscope
+python-doc
+python-docx
+unstructured
+docx2txt
